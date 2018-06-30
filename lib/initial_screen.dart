@@ -1,10 +1,9 @@
-import 'dart:ui';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:google_sign_in/widgets.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 final GoogleSignIn _googleSignIn = new GoogleSignIn();
@@ -42,7 +41,7 @@ class InitialScreen extends StatelessWidget {
                 )
               ),
               _makeShadow((Color color) => new Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 120.0, horizontal: 40.0),
+                  padding: const EdgeInsets.symmetric(vertical: 80.0, horizontal: 20.0),
                   child: new Text(
                     _byline,
                     textAlign: TextAlign.center,
@@ -54,11 +53,25 @@ class InitialScreen extends StatelessWidget {
                 )
               ),
               new RaisedButton(
-                child: new Text('Sign in'),
+                child: new Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    new Text('Sign in with'),
+                    new Padding(
+                      padding: const EdgeInsets.only(left: 5.0),
+                      child: Image(
+                        width: 20.0,
+                        height: 20.0,
+                        fit: BoxFit.scaleDown,
+                        image: new AssetImage('assets/google_logo.png')
+                      )
+                    )
+                  ]
+                ),
                 onPressed: () => _signIn(context),
               ),
               _makeShadow((Color color) => new Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 80.0),
+                  padding: const EdgeInsets.only(top: 80.0),
                   child: new Text(
                     _followLine,
                     style: Theme.of(context).textTheme.subhead.copyWith(
@@ -83,6 +96,7 @@ class InitialScreen extends StatelessWidget {
       accessToken: googleAuth.accessToken,
       idToken: googleAuth.idToken,
     );
+
     assert(user.email != null);
     assert(user.displayName != null);
     assert(!user.isAnonymous);
@@ -103,7 +117,7 @@ class InitialScreen extends StatelessWidget {
             child: child(Colors.black38)
         ),
         new BackdropFilter(
-          filter: new ImageFilter.blur(sigmaX: 1.0, sigmaY: 1.0),
+          filter: new ui.ImageFilter.blur(sigmaX: 1.0, sigmaY: 1.0),
           child: child(Colors.white)
         )
       ]
