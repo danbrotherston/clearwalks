@@ -1,9 +1,12 @@
+import 'dart:async';
 import 'dart:core';
 
 import 'package:flutter/material.dart';
 
 import 'package:clearwalks/location_map.dart';
 import 'package:clearwalks/address_field.dart';
+
+import 'package:location/location.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -22,10 +25,34 @@ enum Coverage {
 }
 
 class HomeState extends State<Home> with SingleTickerProviderStateMixin {
+  // User parameters
   bool _submitBylawComplaint = true;
   double _numberOfAffectedSidewalks = 1.0;
   ProblemLocation _locationOfProblem = ProblemLocation.Sidewalk;
   Coverage _typeOfProblem = Coverage.Snow;
+
+  // Location services
+  Map<String, double> _currentLocation;
+  StreamSubscription<Map<String, double>> _locationSubscription;
+
+  final Location _locationService = new Location();
+
+  @override
+  void initState() {
+    super.initState();
+    _locationSubscription =
+      _locationService.onLocationChanged.listen((Map<String,double> result) {
+        setState(() {
+          _currentLocation = result;
+        });
+      });
+  }
+
+  @override
+  void dispose() {
+    _locationSubscription.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +84,7 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
         ..addAll(_snowCoverage())
         ..addAll(_snowLocation())
         ..add(_sidewalksAffected())
-        ..add(new Expanded(child: new LocationMap()))
+        ..add(new Expanded(child: new LocationMap(currentLocation: _currentLocation)))
         ..add(new Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: new AddressField()
