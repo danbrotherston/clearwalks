@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "486125140641",
+    "firebase_url": "https://clearwalks.firebaseio.com",
+    "project_id": "clearwalks",
+    "storage_bucket": "clearwalks.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:486125140641:android:b5d0a0da4fc984d7",
+        "android_client_info": {
+          "package_name": "com.danbrotherston.clearwalks"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "486125140641-ucd0jm5vt1e9v2j0tnmj2bie8eadg1r6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA42v1QbIFJSkU3j-R6PgfT9xD9jk34xec"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
