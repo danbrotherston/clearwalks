@@ -42,6 +42,11 @@
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
 
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Location is used to automatically detect the address of a sidewalk clearing report you submit.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Location is used to automatically detect the address of a sidewalk clearing report you submit.</string>
+
 	<!-- Google Sign-in Section -->
 	<key>CFBundleURLTypes</key>
 	<array>
