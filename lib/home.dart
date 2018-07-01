@@ -10,9 +10,22 @@ class Home extends StatefulWidget {
   State<StatefulWidget> createState() => new HomeState();
 }
 
+enum ProblemLocation {
+  Sidewalk,
+  CurbCut
+}
+
+enum Coverage {
+  Slippery,
+  Snow,
+  SnowBank
+}
+
 class HomeState extends State<Home> with SingleTickerProviderStateMixin {
   bool _submitBylawComplaint = true;
   double _numberOfAffectedSidewalks = 1.0;
+  ProblemLocation _locationOfProblem = ProblemLocation.Sidewalk;
+  Coverage _typeOfProblem = Coverage.Snow;
 
   @override
   Widget build(BuildContext context) {
@@ -39,12 +52,12 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
         children: <Widget>[
           _bylawInEffect(),
           _bylawComplaint(),
-          new Divider()
+          new Divider(height: 2.0)
         ]
         ..addAll(_snowCoverage())
         ..addAll(_snowLocation())
         ..add(_sidewalksAffected())
-        ..add(new LocationMap())
+        ..add(new Expanded(child: new LocationMap()))
         ..add(new Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: new AddressField()
@@ -61,14 +74,86 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
   }
 
   List<Widget> _snowLocation() {
+    ValueChanged onChanged = (newValue) => setState(() => _locationOfProblem = newValue);
+
     return [
-      new Divider()
+      new Row(
+        children: <Widget>[
+          new Radio(
+            value: ProblemLocation.Sidewalk,
+            groupValue: _locationOfProblem,
+            onChanged: onChanged
+          ),
+          new Text('Sidewalk'),
+          new Radio(
+            value: ProblemLocation.CurbCut,
+            groupValue: _locationOfProblem,
+            onChanged: onChanged
+          ),
+          new Text('Curb Cut/Crosswalk')
+        ],
+      ),
+      new Row(
+        children: <Widget>[
+          new Padding(
+            padding: const EdgeInsets.only(left: 18.0),
+            child: new Text(
+              'Location of clearence problem.',
+              style: Theme.of(context).textTheme.caption.copyWith(
+                fontSize: 10.0,
+                color: Colors.black87
+              ),
+              textAlign: TextAlign.left,
+            )
+          ),
+        ]
+      ),
+      new Divider(height: 8.0)
     ];
   }
 
   List<Widget> _snowCoverage() {
+    ValueChanged onChanged = (newValue) => setState(() => _typeOfProblem = newValue);
+
     return [
-      new Divider()
+      new Row(
+        children: <Widget>[
+          new Radio(
+            value: Coverage.Snow,
+            groupValue: _typeOfProblem,
+            onChanged: onChanged
+          ),
+          new Text('Snow'),
+          new Radio(
+            value: Coverage.Slippery,
+            groupValue: _typeOfProblem,
+            onChanged: onChanged
+          ),
+          new Text('Ice'),
+          new Radio(
+            value: Coverage.SnowBank,
+            groupValue: _typeOfProblem,
+            onChanged: onChanged
+          ),
+          new Text('Snow Bank'),
+        ],
+      ),
+      new Row(
+        children: <Widget>[
+          new Padding(
+            padding: const EdgeInsets.only(left: 18.0),
+            child: new Text(
+              'Type of clearence problem.',
+              style: Theme.of(context).textTheme.caption.copyWith(
+                fontSize: 10.0,
+                color: Colors.black87
+              ),
+              textAlign: TextAlign.left,
+            )
+          ),
+        ]
+      ),
+      new Divider(height: 8.0)
     ];
   }
 
@@ -83,18 +168,20 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
 
   Widget _bylawInEffect() {
     return new Padding(
-      padding: const EdgeInsets.only(left: 16.0),
+      padding: const EdgeInsets.only(left: 18.0),
       child: new Row(
         children: <Widget>[
-          new RichText(
-            text: new TextSpan(
-              text: 'The snow clearing bylaw is ',
-              style: Theme.of(context).textTheme.body1,
-              children: <TextSpan>[
-                new TextSpan(text: 'not in effect', style: new TextStyle(color: Colors.red)),
-                new TextSpan(text: '.')
-              ],
-            ),
+          new Expanded(
+            child: new RichText(
+              text: new TextSpan(
+                text: 'Snow clearing bylaw is ',
+                style: Theme.of(context).textTheme.body1,
+                children: <TextSpan>[
+                  new TextSpan(text: 'not in effect', style: new TextStyle(color: Colors.red)),
+                  new TextSpan(text: '.')
+                ],
+              ),
+            )
           ),
           _helpIcon(_bylawHelpTitle, _bylawHelpText)
         ]
@@ -115,27 +202,17 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
   Widget _bylawComplaint() {
     return new Row(
       children: <Widget>[
-        new Checkbox(
-          value: _submitBylawComplaint,
-          onChanged: (checked) => setState(() => _submitBylawComplaint = checked),
+        new Padding(
+          padding: const EdgeInsets.only(left: 4.0),
+          child: new Checkbox(
+            value: _submitBylawComplaint,
+            onChanged: (checked) => setState(() => _submitBylawComplaint = checked),
+          )
         ),
-        new Text('Submit complaint to bylaw'),
+        new Expanded(child: new Text('Submit complaint to bylaw')),
         _helpIcon(_complaintTitle, _complaintText)
       ],
     );
-  }
-
-  String numberValidator(String value) {
-    if (value == null) {
-      return null;
-    }
-
-    final result = num.parse(value, (string) => null);
-    if (result == null) {
-      return '"$value" is not a valid number';
-    }
-
-    return null;
   }
 
   static const _sidewalksTitle = '# of sidewalks affected';
@@ -150,23 +227,46 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
   ''';
 
   Widget _sidewalksAffected() {
-    return new Padding(
-      padding: const EdgeInsets.only(left: 16.0),
-      child: new Row(
-        children: <Widget>[
-          new Expanded(
-            child: new Slider(
-              value: _numberOfAffectedSidewalks,
-              min: 1.0,
-              max: 6.0,
-              divisions: 5,
-              onChanged: (value) => setState(() => _numberOfAffectedSidewalks = value),
-              label: '# of sidewalks affected'
-            )
-          ),
-          _helpIcon(_sidewalksTitle, _sidewalksText)
-        ]
-      )
+    return new Stack(
+      children: [
+        new Padding(
+          padding: const EdgeInsets.only(left: 10.0),
+          child: new Row(
+            children: <Widget>[
+              new Expanded(
+                child: new Slider(
+                  value: _numberOfAffectedSidewalks,
+                  min: 1.0,
+                  max: 6.0,
+                  divisions: 5,
+                  onChanged: (value) => setState(() => _numberOfAffectedSidewalks = value),
+                  label: '# of sidewalks affected'
+                )
+              ),
+              _helpIcon(_sidewalksTitle, _sidewalksText)
+            ]
+          )
+        ),
+        new Positioned(
+          bottom: 0.0,
+          left: 0.0,
+          child: new Row(
+            children: <Widget>[
+              new Padding(
+                padding: const EdgeInsets.only(left: 18.0, bottom: 2.0),
+                child: new Text(
+                  '# of affected sidewalks.',
+                  style: Theme.of(context).textTheme.caption.copyWith(
+                    fontSize: 10.0,
+                    color: Colors.black87
+                  ),
+                  textAlign: TextAlign.left,
+                )
+              ),
+            ]
+          )
+        )
+      ]
     );
   }
 
