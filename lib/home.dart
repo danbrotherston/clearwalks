@@ -240,7 +240,7 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
                   max: 6.0,
                   divisions: 5,
                   onChanged: (value) => setState(() => _numberOfAffectedSidewalks = value),
-                  label: '# of sidewalks affected'
+                  label: '${_numberOfAffectedSidewalks.toStringAsFixed(0)} sidewalks affected'
                 )
               ),
               _helpIcon(_sidewalksTitle, _sidewalksText)
