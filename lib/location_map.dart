@@ -9,7 +9,8 @@ class LocationMap extends StatefulWidget {
 
   static const Map<String, double> _defaultLocation = {
     'latitude': 43.458186,
-    'longitude': -80.5186281
+    'longitude': -80.5186281,
+    'accuracy': 5000.0
   };
 
   LocationMap({currentLocation}) : this._currentLocation = currentLocation ?? _defaultLocation;
@@ -49,6 +50,8 @@ class LocationMapState extends State<LocationMap> {
 
   @override
   Widget build(BuildContext context) {
+    const double pinHeight = 48.0;
+
     return mapBytes == null
       ? new Container()
       : new Stack(
@@ -56,21 +59,38 @@ class LocationMapState extends State<LocationMap> {
           new Center(child: new Image.memory(mapBytes)),
           new Center(
             child: new Padding(  // Padding ensures the tip of the pointer is at the centre of te map
-              padding: const EdgeInsets.only(bottom: 48.0),
-              child: Image.asset('assets/map_pin.png', height: 48.0)
+              padding: const EdgeInsets.only(bottom: pinHeight),
+              child: Image.asset('assets/map_pin.png', height: pinHeight)
             )
           ),
           new Positioned(
-            child: new GPSGauge(strength: GPSStrength.WeakSignal),
+            child: new GPSGauge(strength: _interpretAccuracy()),
             top: 8.0,
             right: 8.0,
           )
         ]
       );
   }
+
+  GPSStrength _interpretAccuracy() {
+    if (widget._currentLocation['accuracy'] == null || widget._currentLocation['accuracy'] < 0)
+      return GPSStrength.NoSignal;
+
+    if (widget._currentLocation['accuracy'] < 13)
+      return GPSStrength.StrongSignal;
+
+    if (widget._currentLocation['accuracy'] < 20)
+      return GPSStrength.MediumSignal;
+
+    if (widget._currentLocation['accuracy'] < 100)
+      return GPSStrength.WeakSignal;
+
+    else return GPSStrength.NoSignal;
+  }
 }
 
 enum GPSStrength {
+  ManuallyRepositioning,
   NoTracking,
   NoSignal,
   WeakSignal,
@@ -83,8 +103,9 @@ class GPSGauge extends StatelessWidget {
 
   GPSGauge({this.strength});
 
-  static const String _noTracking = 'Manually respositioning map.';
-  static const String _tracking = 'GPS Signal Strength.';
+  static const String _manual = 'Manually respositioning map.';
+  static const String _noTracking = 'GPS is not tracking.';
+  static const String _tracking = 'GPS signal strength.';
 
   static const Color _noSignal = Colors.grey;
   static const Color _weakSignal = Colors.red;
@@ -95,6 +116,7 @@ class GPSGauge extends StatelessWidget {
   Widget build(BuildContext context) {
     Color color1 = _noSignal, color2 = _noSignal, color3 = _noSignal;
     switch (strength) {
+      case GPSStrength.ManuallyRepositioning:
       case GPSStrength.NoSignal:
       case GPSStrength.NoTracking:
         break;
@@ -129,7 +151,9 @@ class GPSGauge extends StatelessWidget {
           new Padding(
             padding: const EdgeInsets.only(bottom: spacing),
             child: new Text(
-              strength == GPSStrength.NoTracking ? _noTracking : _tracking,
+              strength == GPSStrength.NoTracking
+                ? _noTracking 
+                : strength == GPSStrength.ManuallyRepositioning ? _manual : _tracking,
               style: Theme.of(context).textTheme.body1.copyWith(fontSize: 10.0, color: Colors.black87),
               textAlign: TextAlign.right,
             )
