@@ -70,11 +70,11 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
           )
         ],
       ),
-      floatingActionButton: new FloatingActionButton(
+      /*floatingActionButton: new FloatingActionButton(
         tooltip: 'Submit this sidewalk report.',
         child: new Icon(Icons.add),
         onPressed: _submitReport,
-      ),
+      ),*/
       body: new Column(
         children: <Widget>[
           _bylawInEffect(),
