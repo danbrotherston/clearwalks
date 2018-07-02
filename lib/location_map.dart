@@ -30,7 +30,7 @@ class LocationMapState extends State<LocationMap> {
   }
 
   void _readImage() {
-    String imageUrl = "https://maps.googleapis.com/maps/api/staticmap?center=${widget._currentLocation["latitude"]},${widget._currentLocation["longitude"]}&zoom=18&size=640x400&key=$apiKey"
+    String imageUrl = "https://maps.googleapis.com/maps/api/staticmap?center=${widget._currentLocation["latitude"]},${widget._currentLocation["longitude"]}&zoom=18&size=640x400&key=$apiKey";
     http.readBytes(imageUrl).then((bytes) {
       setState(() {
         mapBytes = bytes;
@@ -49,8 +49,18 @@ class LocationMapState extends State<LocationMap> {
 
   @override
   Widget build(BuildContext context) {
-    return mapBytes != null
-      ? new Image.memory(mapBytes)
-      : new Container();
+    return mapBytes == null
+      ? new Container()
+      : new Stack(
+        children: <Widget>[
+          new Center(child: new Image.memory(mapBytes)),
+          new Center(
+            child: new Padding(  // Padding ensures the tip of the pointer is at the centre of te map
+              padding: const EdgeInsets.only(bottom: 48.0),
+              child: Image.asset('assets/map_pin.png', height: 48.0)
+            )
+          )
+        ]
+      );
   }
 }
