@@ -56,13 +56,13 @@ class LocationMapState extends State<LocationMap> {
       ? new Container()
       : new Stack(
         children: <Widget>[
-          new CustomPaint(
+          new Center(child: new CustomPaint(
             painter: new _ZoomOffsetImagePainter(
               image: _mapImage,
-              offset: Offset.zero,
+              offset: new Offset(-_mapImage.width.toDouble()/2, -_mapImage.height.toDouble()/2),
               scale: 1.0
             )
-          ),
+          )),
           new Center(
             child: new Padding(  // Padding ensures the tip of the pointer is at the centre of te map
               padding: const EdgeInsets.only(bottom: pinHeight),
