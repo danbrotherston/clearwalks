@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:http/http.dart' as http;
 
@@ -20,7 +21,7 @@ class LocationMap extends StatefulWidget {
 }
 
 class LocationMapState extends State<LocationMap> {
-  Uint8List mapBytes;
+  ui.Image _mapImage;
 
   static const apiKey = 'AIzaSyAInd7jJu_aAaNnPBHpNpZaQyr0sa-upuo';
 
@@ -30,13 +31,12 @@ class LocationMapState extends State<LocationMap> {
     _readImage();
   }
 
-  void _readImage() {
+  void _readImage() async {
     String imageUrl = "https://maps.googleapis.com/maps/api/staticmap?center=${widget._currentLocation["latitude"]},${widget._currentLocation["longitude"]}&zoom=18&size=640x400&key=$apiKey";
-    http.readBytes(imageUrl).then((bytes) {
-      setState(() {
-        mapBytes = bytes;
-      });
-    });
+    Uint8List bytes = await http.readBytes(imageUrl);
+    ui.Codec codec = await ui.instantiateImageCodec(bytes);
+    ui.FrameInfo frame = await codec.getNextFrame();
+    setState(() => _mapImage = frame.image);
   }
 
   @override
@@ -52,11 +52,17 @@ class LocationMapState extends State<LocationMap> {
   Widget build(BuildContext context) {
     const double pinHeight = 48.0;
 
-    return mapBytes == null
+    return _mapImage == null
       ? new Container()
       : new Stack(
         children: <Widget>[
-          new Center(child: new Image.memory(mapBytes)),
+          new CustomPaint(
+            painter: new _ZoomOffsetImagePainter(
+              image: _mapImage,
+              offset: Offset.zero,
+              scale: 1.0
+            )
+          ),
           new Center(
             child: new Padding(  // Padding ensures the tip of the pointer is at the centre of te map
               padding: const EdgeInsets.only(bottom: pinHeight),
@@ -178,5 +184,31 @@ class GPSGauge extends StatelessWidget {
         ]
       )
     );
+  }
+}
+
+class _ZoomOffsetImagePainter extends CustomPainter {
+  const _ZoomOffsetImagePainter({this.image, this.offset, this.scale});
+
+  final ui.Image image;
+  final Offset offset;
+  final double scale;
+
+  @override
+  void paint(Canvas canvas, Size canvasSize) {
+    Size imageSize = new Size(image.width.toDouble(), image.height.toDouble());
+    Size targetSize = imageSize * scale;
+
+    paintImage(
+      canvas: canvas,
+      rect: offset & targetSize,
+      image: image,
+      fit: BoxFit.fill,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_ZoomOffsetImagePainter old) {
+    return old.image != image || old.offset != offset || old.scale != scale;
   }
 }
