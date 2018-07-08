@@ -65,7 +65,7 @@ class LocationMapState extends State<LocationMap> {
             new ClipRect(
               child: new CustomPaint(
                 size: Size.infinite,
-                painter: new _ZoomOffsetImagePainter(
+                painter: new _OffsetCenterImagePainter(
                   image: _mapImage,
                   offset: _panOffset,
                   scale: 1.0
@@ -197,8 +197,8 @@ class GPSGauge extends StatelessWidget {
   }
 }
 
-class _ZoomOffsetImagePainter extends CustomPainter {
-  const _ZoomOffsetImagePainter({this.image, this.offset, this.scale});
+class _OffsetCenterImagePainter extends CustomPainter {
+  const _OffsetCenterImagePainter({this.image, this.offset, this.scale});
 
   final ui.Image image;
   final Offset offset;
@@ -211,14 +211,14 @@ class _ZoomOffsetImagePainter extends CustomPainter {
 
     paintImage(
       canvas: canvas,
-      rect: offset & targetSize,
+      rect: offset.translate(-canvasSize.width / 2, -canvasSize.height / 2) & targetSize,
       image: image,
       fit: BoxFit.fill,
     );
   }
 
   @override
-  bool shouldRepaint(_ZoomOffsetImagePainter old) {
+  bool shouldRepaint(_OffsetCenterImagePainter old) {
     return old.image != image || old.offset != offset || old.scale != scale;
   }
 }
