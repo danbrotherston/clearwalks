@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:core';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:vector_math/vector_math.dart' as VMath;
 
 import 'package:clearwalks/location_map.dart';
 import 'package:clearwalks/address_field.dart';
@@ -34,17 +36,47 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
   // Location services
   Map<String, double> _currentLocation;
   StreamSubscription<Map<String, double>> _locationSubscription;
+  bool _isManuallyRepositioningMap = false;
 
   final Location _locationService = new Location();
+
+  double _metersBetween(lat1, long1, lat2, long2) {
+    // Derived from the haversine formula as described here: https://www.movable-type.co.uk/scripts/latlong.html
+    double radius = 6371000.0;
+    double radLat1 = VMath.radians(lat1);
+    double radLat2 = VMath.radians(lat2);
+    double deltaLat = VMath.radians(lat1-lat2);
+    double deltaLong = VMath.radians(long1-long2);
+
+    double a = sin(deltaLat / 2) * sin(deltaLat / 2) +
+               cos(radLat1) * cos(radLat2) * sin(deltaLong / 2) * sin(deltaLong / 2);
+
+    double c = 2 * atan2(sqrt(a), sqrt(1 - a));
+
+    double distance = radius * c;
+
+    return distance.abs();
+  }
 
   @override
   void initState() {
     super.initState();
     _locationSubscription =
       _locationService.onLocationChanged.listen((Map<String,double> result) {
-        setState(() {
-          _currentLocation = result;
-        });
+        double minDistanceForMapUpdate = 20.0;
+        double distance = _currentLocation == null
+          ? double.infinity
+          : _metersBetween(
+            _currentLocation['latitude'],
+            _currentLocation['longitude'],
+            result['latitude'],
+            result['longitude']);
+
+        if (!_isManuallyRepositioningMap && distance > minDistanceForMapUpdate) {
+          setState(() {
+            _currentLocation = result;
+          });
+        }
       });
   }
 
@@ -84,7 +116,15 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
         ..addAll(_snowCoverage())
         ..addAll(_snowLocation())
         ..add(_sidewalksAffected())
-        ..add(new Expanded(child: new LocationMap(currentLocation: _currentLocation)))
+        ..add(
+          new Expanded(
+            child: new LocationMap(
+              currentLocation: _currentLocation,
+              onPanStart: () => _isManuallyRepositioningMap = true,
+              onPanEnd: (Offset newOffset) {},
+            )
+          )
+        )
         ..add(new Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: new AddressField()

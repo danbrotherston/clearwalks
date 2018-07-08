@@ -39,7 +39,7 @@ class LocationMapState extends State<LocationMap> {
   }
 
   void _readImage() async {
-    String imageUrl = "https://maps.googleapis.com/maps/api/staticmap?center=${widget._currentLocation["latitude"]},${widget._currentLocation["longitude"]}&zoom=18&size=640x400&key=$apiKey";
+    String imageUrl = "https://maps.googleapis.com/maps/api/staticmap?scale=2&center=${widget._currentLocation["latitude"]},${widget._currentLocation["longitude"]}&zoom=18&size=640x400&key=$apiKey";
     Uint8List bytes = await http.readBytes(imageUrl);
     ui.Codec codec = await ui.instantiateImageCodec(bytes);
     ui.FrameInfo frame = await codec.getNextFrame();
@@ -65,6 +65,8 @@ class LocationMapState extends State<LocationMap> {
     return _mapImage == null
       ? new Container()
       : new GestureDetector(
+        onPanStart: (DragStartDetails details) => this.widget.onPanStart(),
+        onPanEnd: (DragEndDetails details) => this.widget.onPanEnd(_panOffset),
         onPanUpdate: (DragUpdateDetails details) {
           this.setState(() => _panOffset = _panOffset.translate(details.delta.dx, details.delta.dy));
         },
@@ -77,7 +79,7 @@ class LocationMapState extends State<LocationMap> {
                 painter: new _OffsetCenterImagePainter(
                   image: _mapImage,
                   offset: _panOffset,
-                  scale: 1.0
+                  scale: 0.5
                 )
               )
             ),
@@ -98,10 +100,10 @@ class LocationMapState extends State<LocationMap> {
   }
 
   GPSStrength _interpretAccuracy() {
-    if (_panOffset != Offset.zero)
+    if (_panOffset != Offset.zero || widget._currentLocation['accuracy'] == null)
       return GPSStrength.ManuallyRepositioning;
 
-    if (widget._currentLocation['accuracy'] == null || widget._currentLocation['accuracy'] < 0)
+    if (widget._currentLocation['accuracy'] < 0)
       return GPSStrength.NoSignal;
 
     if (widget._currentLocation['accuracy'] < 13)
