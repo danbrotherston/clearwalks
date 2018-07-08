@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 
 class LocationMap extends StatefulWidget {
   final Map<String, double> _currentLocation;
+  final ValueChanged<Offset> onPanEnd;
+  final Function onPanStart;
 
   static const Map<String, double> _defaultLocation = {
     'latitude': 43.458186,
@@ -14,7 +16,11 @@ class LocationMap extends StatefulWidget {
     'accuracy': 5000.0
   };
 
-  LocationMap({currentLocation}) : this._currentLocation = currentLocation ?? _defaultLocation;
+  LocationMap({
+    currentLocation,
+    @required this.onPanEnd,
+    @required this.onPanStart})
+  : this._currentLocation = currentLocation ?? _defaultLocation;
 
   @override
   State<StatefulWidget> createState() => new LocationMapState();
@@ -37,7 +43,10 @@ class LocationMapState extends State<LocationMap> {
     Uint8List bytes = await http.readBytes(imageUrl);
     ui.Codec codec = await ui.instantiateImageCodec(bytes);
     ui.FrameInfo frame = await codec.getNextFrame();
-    setState(() => _mapImage = frame.image);
+    setState(() {
+      _mapImage = frame.image;
+      _panOffset = Offset.zero;
+    });
   }
 
   @override
@@ -89,6 +98,9 @@ class LocationMapState extends State<LocationMap> {
   }
 
   GPSStrength _interpretAccuracy() {
+    if (_panOffset != Offset.zero)
+      return GPSStrength.ManuallyRepositioning;
+
     if (widget._currentLocation['accuracy'] == null || widget._currentLocation['accuracy'] < 0)
       return GPSStrength.NoSignal;
 
