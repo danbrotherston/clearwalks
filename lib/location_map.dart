@@ -22,7 +22,7 @@ class LocationMap extends StatefulWidget {
 
 class LocationMapState extends State<LocationMap> {
   ui.Image _mapImage;
-  Offset panOffset = Offset.zero;
+  Offset _panOffset = Offset.zero;
 
   static const apiKey = 'AIzaSyAInd7jJu_aAaNnPBHpNpZaQyr0sa-upuo';
 
@@ -57,23 +57,21 @@ class LocationMapState extends State<LocationMap> {
       ? new Container()
       : new GestureDetector(
         onPanUpdate: (DragUpdateDetails details) {
-          debugPrint(details.toString());
-          this.setState(() => panOffset = panOffset.translate(details.delta.dx, details.delta.dy));
-          debugPrint(panOffset.toString());
+          this.setState(() => _panOffset = _panOffset.translate(details.delta.dx, details.delta.dy));
         },
         behavior: HitTestBehavior.opaque,
         child: new Stack(
           children: <Widget>[
-            new Center(child: new CustomPaint(
-              painter: new _ZoomOffsetImagePainter(
-                image: _mapImage,
-                offset: new Offset(
-                  -_mapImage.width.toDouble()/2 + panOffset.dx,
-                  -_mapImage.height.toDouble()/2 + panOffset.dy
-                ),
-                scale: 1.0
+            new ClipRect(
+              child: new CustomPaint(
+                size: Size.infinite,
+                painter: new _ZoomOffsetImagePainter(
+                  image: _mapImage,
+                  offset: _panOffset,
+                  scale: 1.0
+                )
               )
-            )),
+            ),
             new Center(
               child: new Padding(  // Padding ensures the tip of the pointer is at the centre of te map
                 padding: const EdgeInsets.only(bottom: pinHeight),
