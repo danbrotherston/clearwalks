@@ -121,7 +121,22 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
             child: new LocationMap(
               currentLocation: _currentLocation,
               onPanStart: () => _isManuallyRepositioningMap = true,
-              onPanEnd: (Offset newOffset) {},
+              onPanEnd: (Offset newOffset) {
+                int zoom = (1 << 17);
+                double size = 256.0 * zoom;
+                double resLat = cos(_currentLocation['latitude'] * PI / 180.0) * 360.0 / size;
+                double resLong = 360 / size;
+
+                double deltaLat = resLat * newOffset.dy;
+                double deltaLong = resLong * newOffset.dx * -1;
+
+                var newLocation = {
+                  'latitude': _currentLocation['latitude'] + deltaLat,
+                  'longitude': _currentLocation['longitude'] + deltaLong
+                };
+
+                setState(() => _currentLocation = newLocation);
+              },
             )
           )
         )
