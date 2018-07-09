@@ -39,7 +39,7 @@ class LocationMapState extends State<LocationMap> {
   }
 
   void _readImage() async {
-    String imageUrl = "https://maps.googleapis.com/maps/api/staticmap?scale=2&center=${widget._currentLocation["latitude"]},${widget._currentLocation["longitude"]}&zoom=18&size=640x400&key=$apiKey";
+    String imageUrl = "https://maps.googleapis.com/maps/api/staticmap?scale=2&center=${widget._currentLocation["latitude"]},${widget._currentLocation["longitude"]}&zoom=17&size=640x640&key=$apiKey";
     Uint8List bytes = await http.readBytes(imageUrl);
     ui.Codec codec = await ui.instantiateImageCodec(bytes);
     ui.FrameInfo frame = await codec.getNextFrame();
@@ -222,12 +222,18 @@ class _OffsetCenterImagePainter extends CustomPainter {
   void paint(Canvas canvas, Size canvasSize) {
     Size imageSize = new Size(image.width.toDouble(), image.height.toDouble());
     Size targetSize = imageSize * scale;
+    Offset targetOffset = offset
+      .translate(
+        (targetSize.width - canvasSize.width) * -0.5,
+        (targetSize.height - canvasSize.height) * -0.5
+      );
+
 
     paintImage(
       canvas: canvas,
-      rect: offset.translate(-canvasSize.width / 2, -canvasSize.height / 2) & targetSize,
+      rect: targetOffset & targetSize,
       image: image,
-      fit: BoxFit.fill,
+      fit: BoxFit.cover,
     );
   }
 
