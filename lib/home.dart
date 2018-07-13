@@ -35,6 +35,7 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
 
   // Location services
   Map<String, double> _currentLocation;
+  Map<String, double> _lastGPSLocation;
   StreamSubscription<Map<String, double>> _locationSubscription;
   bool _isManuallyRepositioningMap = false;
 
@@ -63,6 +64,7 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
     super.initState();
     _locationSubscription =
       _locationService.onLocationChanged.listen((Map<String,double> result) {
+        _lastGPSLocation = result;
         double minDistanceForMapUpdate = 20.0;
         double distance = _currentLocation == null
           ? double.infinity
@@ -122,6 +124,8 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
               currentLocation: _currentLocation,
               onPanStart: () => _isManuallyRepositioningMap = true,
               onPanEnd: (Offset newOffset) {
+                if (_currentLocation == null) return;
+
                 int zoom = (1 << 17);
                 double size = 256.0 * zoom;
                 double resLat = cos(_currentLocation['latitude'] * PI / 180.0) * 360.0 / size;
@@ -137,6 +141,10 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
 
                 setState(() => _currentLocation = newLocation);
               },
+              onTapGPSMode: () => setState(() {
+                _isManuallyRepositioningMap = false;
+                _currentLocation = _lastGPSLocation;
+              }),
             )
           )
         )

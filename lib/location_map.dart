@@ -9,6 +9,7 @@ class LocationMap extends StatefulWidget {
   final Map<String, double> _currentLocation;
   final ValueChanged<Offset> onPanEnd;
   final Function onPanStart;
+  final Function onTapGPSMode;
 
   static const Map<String, double> _defaultLocation = {
     'latitude': 43.458186,
@@ -19,7 +20,8 @@ class LocationMap extends StatefulWidget {
   LocationMap({
     currentLocation,
     @required this.onPanEnd,
-    @required this.onPanStart})
+    @required this.onPanStart,
+    @required this.onTapGPSMode})
   : this._currentLocation = currentLocation ?? _defaultLocation;
 
   @override
@@ -90,7 +92,7 @@ class LocationMapState extends State<LocationMap> {
               )
             ),
             new Positioned(
-              child: new GPSGauge(strength: _interpretAccuracy()),
+              child: new GPSGauge(strength: _interpretAccuracy(), onTapGPSMode: widget.onTapGPSMode),
               top: 8.0,
               right: 8.0,
             )
@@ -130,8 +132,9 @@ enum GPSStrength {
 
 class GPSGauge extends StatelessWidget {
   final GPSStrength strength;
+  final Function onTapGPSMode;
 
-  GPSGauge({this.strength});
+  GPSGauge({@required this.strength, @required this.onTapGPSMode});
 
   static const String _manual = 'Manually respositioning map.';
   static const String _noTracking = 'GPS is not tracking.';
@@ -144,6 +147,40 @@ class GPSGauge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return new ConstrainedBox(
+      constraints: new BoxConstraints(maxWidth: 200.0),
+      child: new Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: <Widget>[
+          new Padding(
+            padding: const EdgeInsets.only(bottom: spacing),
+            child: new Text(
+              strength == GPSStrength.NoTracking
+                ? _noTracking 
+                : strength == GPSStrength.ManuallyRepositioning ? _manual : _tracking,
+              style: Theme.of(context).textTheme.body1.copyWith(fontSize: 10.0, color: Colors.black87),
+              textAlign: TextAlign.right,
+            )
+          ),
+          new Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: strength != GPSStrength.ManuallyRepositioning
+              ? _buildSignalGauge()
+              : [
+                  new IconButton(
+                    icon: new ImageIcon(new AssetImage('assets/satellite.png')),
+                    onPressed: this.onTapGPSMode
+                  )
+                ]
+          )
+        ]
+      )
+    );
+  }
+
+  static const double spacing = 4.0;
+
+  List<Widget> _buildSignalGauge() {
     Color color1 = _noSignal, color2 = _noSignal, color3 = _noSignal;
     switch (strength) {
       case GPSStrength.ManuallyRepositioning:
@@ -169,45 +206,23 @@ class GPSGauge extends StatelessWidget {
         break;
     }
 
-    const double spacing = 4.0;
     const double boxHeight = 12.0;
     const double boxWidth = 6.0;
 
-    return new ConstrainedBox(
-      constraints: new BoxConstraints(maxWidth: 200.0),
-      child: new Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: <Widget>[
-          new Padding(
-            padding: const EdgeInsets.only(bottom: spacing),
-            child: new Text(
-              strength == GPSStrength.NoTracking
-                ? _noTracking 
-                : strength == GPSStrength.ManuallyRepositioning ? _manual : _tracking,
-              style: Theme.of(context).textTheme.body1.copyWith(fontSize: 10.0, color: Colors.black87),
-              textAlign: TextAlign.right,
-            )
-          ),
-          new Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: <Widget>[
-              new Padding(
-                padding: const EdgeInsets.only(right: spacing),
-                child: Container(height: boxHeight, width: boxWidth, color: color3)
-              ),
-              new Padding(
-                padding: const EdgeInsets.only(right: spacing),
-                child: Container(height: boxHeight, width: boxWidth, color: color2)
-              ),
-              new Padding(
-                padding: const EdgeInsets.only(right: spacing),
-                child: Container(height: boxHeight, width: boxWidth, color: color1)
-              )
-            ],
-          )
-        ]
+    return [
+      new Padding(
+        padding: const EdgeInsets.only(right: spacing),
+        child: Container(height: boxHeight, width: boxWidth, color: color3)
+      ),
+      new Padding(
+        padding: const EdgeInsets.only(right: spacing),
+        child: Container(height: boxHeight, width: boxWidth, color: color2)
+      ),
+      new Padding(
+        padding: const EdgeInsets.only(right: spacing),
+        child: Container(height: boxHeight, width: boxWidth, color: color1)
       )
-    );
+    ];
   }
 }
 
