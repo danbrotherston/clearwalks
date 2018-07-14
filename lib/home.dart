@@ -26,6 +26,12 @@ enum Coverage {
   SnowBank
 }
 
+enum SnowBylaw {
+  Unknown,
+  InEffect,
+  NotInEffect
+}
+
 class HomeState extends State<Home> with SingleTickerProviderStateMixin {
   // User parameters
   bool _submitBylawComplaint = true;
@@ -38,6 +44,9 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
   Map<String, double> _lastGPSLocation;
   StreamSubscription<Map<String, double>> _locationSubscription;
   bool _isManuallyRepositioningMap = false;
+
+  // Snow bylaw policy
+  SnowBylaw _isBylawInEffect = SnowBylaw.Unknown;
 
   final Location _locationService = new Location();
 
@@ -62,6 +71,7 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    _checkBylaw();
     _locationSubscription =
       _locationService.onLocationChanged.listen((Map<String,double> result) {
         _lastGPSLocation = result;
@@ -247,6 +257,8 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
     ];
   }
 
+  void _checkBylaw() {}
+
   static const _bylawHelpTitle = 'Snow clearing bylaw';
   static const _bylawHelpText = '''
     The sidewalk clearing bylaw is only in effect when there has been no snowfall for
@@ -257,6 +269,21 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
   ''';
 
   Widget _bylawInEffect() {
+    TextSpan bylawInEffectText;
+    switch(_isBylawInEffect) {
+      case SnowBylaw.InEffect:
+        bylawInEffectText = new TextSpan(text: 'in effect', style: new TextStyle(color: Colors.green));
+        break;
+
+      case SnowBylaw.NotInEffect:
+        bylawInEffectText = new TextSpan(text: 'not in effect', style: new TextStyle(color: Colors.red));
+        break;
+
+      case SnowBylaw.Unknown:
+      default:
+        bylawInEffectText = new TextSpan(text: '...', style: new TextStyle(color: Colors.grey));
+    }
+
     return new Padding(
       padding: const EdgeInsets.only(left: 18.0),
       child: new Row(
@@ -267,7 +294,7 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
                 text: 'Snow clearing bylaw is ',
                 style: Theme.of(context).textTheme.body1,
                 children: <TextSpan>[
-                  new TextSpan(text: 'not in effect', style: new TextStyle(color: Colors.red)),
+                  bylawInEffectText,
                   new TextSpan(text: '.')
                 ],
               ),
