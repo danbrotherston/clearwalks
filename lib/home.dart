@@ -150,7 +150,7 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
         )
         ..add(new Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: new AddressField()
+          child: new AddressField(currentLocation: _currentLocation)
         ))
       )
     );

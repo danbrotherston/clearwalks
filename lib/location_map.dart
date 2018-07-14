@@ -5,6 +5,8 @@ import 'package:http/http.dart' as http;
 
 import 'package:flutter/material.dart';
 
+import 'package:clearwalks/consts.dart';
+
 class LocationMap extends StatefulWidget {
   final Map<String, double> _currentLocation;
   final ValueChanged<Offset> onPanEnd;
@@ -32,8 +34,6 @@ class LocationMapState extends State<LocationMap> {
   ui.Image _mapImage;
   Offset _panOffset = Offset.zero;
 
-  static const apiKey = 'AIzaSyAInd7jJu_aAaNnPBHpNpZaQyr0sa-upuo';
-
   @override
   void initState() {
     super.initState();
@@ -41,7 +41,7 @@ class LocationMapState extends State<LocationMap> {
   }
 
   void _readImage() async {
-    String imageUrl = "https://maps.googleapis.com/maps/api/staticmap?scale=2&center=${widget._currentLocation["latitude"]},${widget._currentLocation["longitude"]}&zoom=17&size=640x640&key=$apiKey";
+    String imageUrl = "https://maps.googleapis.com/maps/api/staticmap?scale=2&center=${widget._currentLocation["latitude"]},${widget._currentLocation["longitude"]}&zoom=17&size=640x640&key=$API_KEY";
     Uint8List bytes = await http.readBytes(imageUrl);
     ui.Codec codec = await ui.instantiateImageCodec(bytes);
     ui.FrameInfo frame = await codec.getNextFrame();
