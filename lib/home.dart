@@ -8,6 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:clearwalks/location_map.dart';
 import 'package:clearwalks/address_field.dart';
 
+import 'package:firebase_database/firebase_database.dart';
+
 import 'package:location/location.dart';
 import 'package:vector_math/vector_math.dart' as VMath;
 import 'package:http/http.dart';
@@ -271,6 +273,11 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
     ];
   }
 
+  T _safeElementAt<T>(List<T> list, int index) {
+    try { return list.elementAt(index); }
+    catch(error) { return null; }
+  }
+
   void _checkBylaw() async {
     DateTime currentDate = DateTime.now();
 
@@ -281,13 +288,31 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
       return;
     }
 
+    DatabaseReference bylawDateRef = FirebaseDatabase.instance.reference().child('bylaw/date_checked');
+    DatabaseReference bylawInForceRef = FirebaseDatabase.instance.reference().child('bylaw/in_force');
+
+    DateTime date = DateTime.tryParse((await bylawDateRef.once()).value ?? "");
+
+    if (_isSameDay(date, DateTime.now())) {
+      SnowBylaw bylaw = _safeElementAt(SnowBylaw.values, (await bylawInForceRef.once()).value ?? SnowBylaw.Unknown.index)
+        ?? SnowBylaw.Unknown;
+
+      if (bylaw != SnowBylaw.Unknown) {
+        setState(() => _isBylawInEffect = bylaw);
+        return;
+      }
+    }
+
     Response result = await get('http://climate.weather.gc.ca/climate_data/bulk_data_e.html?format=csv&stationID=48569&Year=${currentDate.year}&Month=${currentDate.month}&Day=${currentDate.day}&timeframe=2');
 
     SnowBylaw bylaw = result.statusCode == 200
-      ? /*await compute(_computeBylaw, result.body)*/ _computeBylaw(result.body)
+      ? await compute(_computeBylaw, result.body)
       : SnowBylaw.Unknown;
 
     setState(() => _isBylawInEffect = bylaw);
+
+    await bylawInForceRef.set(bylaw.index);
+    bylawDateRef.set(DateTime.now().toIso8601String());
   }
 
   static const _bylawHelpTitle = 'Snow clearing bylaw';
@@ -423,6 +448,15 @@ officers will also inspect adjacent sidewalks as well when inspecting addresses.
   void _submitReport() {}
 }
 
+bool _isSameDay(DateTime date1, DateTime date2) {
+  return
+        date1 != null
+    && date2 != null
+    && date1.day == date2.day
+    && date1.month == date2.month
+    && date1.year == date2.year;
+}
+
 SnowBylaw _computeBylaw(String responseBody) {
   List<List<dynamic>> weatherData = const CsvToListConverter(eol: '\n').convert(responseBody);
   weatherData.removeWhere((row) => row.length <= 2); // remove intro headers from the csv data.
@@ -444,7 +478,7 @@ SnowBylaw _computeBylaw(String responseBody) {
     DateTime rowDate = DateTime.tryParse(row.elementAt(indexOfDateTime).toString());
     if (rowDate == null) continue;
 
-    if (previousDay.day == rowDate.day && previousDay.month == rowDate.month && previousDay.year == rowDate.year) {
+    if (_isSameDay(rowDate, previousDay)) {
       double snow = 0.0;
       if (row.elementAt(indexOfTotalSnowFlag).toString() != 'M' && row.elementAt(indexOfTotalSnow).toString().isNotEmpty) {
         snow = double.tryParse(row.elementAt(indexOfTotalSnow).toString());
