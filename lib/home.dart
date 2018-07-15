@@ -274,6 +274,13 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
   void _checkBylaw() async {
     DateTime currentDate = DateTime.now();
 
+    // Bylaw doesn't operate on weekends.
+    List<int> weekendDays = [DateTime.saturday, DateTime.sunday];
+    if (weekendDays.contains(currentDate.weekday)) {
+      setState(() => _isBylawInEffect = SnowBylaw.NotInEffect);
+      return;
+    }
+
     Response result = await get('http://climate.weather.gc.ca/climate_data/bulk_data_e.html?format=csv&stationID=48569&Year=${currentDate.year}&Month=${currentDate.month}&Day=${currentDate.day}&timeframe=2');
 
     SnowBylaw bylaw = result.statusCode == 200
@@ -428,15 +435,16 @@ SnowBylaw _computeBylaw(String responseBody) {
     return SnowBylaw.Unknown;
 
   // Find the last weekday.
-  DateTime lastWeekday = DateTime.now().subtract(new Duration(days: 1));
+  DateTime previousDay = DateTime.now().subtract(const Duration(days: 1));
+  /*DateTime lastWeekday = DateTime.now().subtract(const Duration(days: 1));
   if (lastWeekday.weekday == DateTime.sunday) lastWeekday = lastWeekday.subtract(new Duration(days: 1));
-  if (lastWeekday.weekday == DateTime.saturday) lastWeekday = lastWeekday.subtract(new Duration(days: 1));
+  if (lastWeekday.weekday == DateTime.saturday) lastWeekday = lastWeekday.subtract(new Duration(days: 1));*/
 
   for (List<dynamic> row in weatherData) {
     DateTime rowDate = DateTime.tryParse(row.elementAt(indexOfDateTime).toString());
     if (rowDate == null) continue;
 
-    if (lastWeekday.day == rowDate.day && lastWeekday.month == rowDate.month && lastWeekday.year == rowDate.year) {
+    if (previousDay.day == rowDate.day && previousDay.month == rowDate.month && previousDay.year == rowDate.year) {
       double snow = 0.0;
       if (row.elementAt(indexOfTotalSnowFlag).toString() != 'M' && row.elementAt(indexOfTotalSnow).toString().isNotEmpty) {
         snow = double.tryParse(row.elementAt(indexOfTotalSnow).toString());
