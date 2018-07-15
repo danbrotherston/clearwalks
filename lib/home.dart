@@ -2,13 +2,16 @@ import 'dart:async';
 import 'dart:core';
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:vector_math/vector_math.dart' as VMath;
 
 import 'package:clearwalks/location_map.dart';
 import 'package:clearwalks/address_field.dart';
 
 import 'package:location/location.dart';
+import 'package:vector_math/vector_math.dart' as VMath;
+import 'package:http/http.dart';
+import 'package:csv/csv.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -138,7 +141,7 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
 
                 int zoom = (1 << 17);
                 double size = 256.0 * zoom;
-                double resLat = cos(_currentLocation['latitude'] * PI / 180.0) * 360.0 / size;
+                double resLat = cos(_currentLocation['latitude'] * pi / 180.0) * 360.0 / size;
                 double resLong = 360 / size;
 
                 double deltaLat = resLat * newOffset.dy;
@@ -257,7 +260,17 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
     ];
   }
 
-  void _checkBylaw() {}
+  void _checkBylaw() async {
+    DateTime currentDate = DateTime.now();
+
+    Response result = await get('http://climate.weather.gc.ca/climate_data/bulk_data_e.html?format=csv&stationID=48569&Year=${currentDate.year}&Month=${currentDate.month}&Day=${currentDate.day}&timeframe=2');
+
+    SnowBylaw bylaw = result.statusCode == 200
+      ? /*await compute(_computeBylaw, result.body)*/ _computeBylaw(result.body)
+      : SnowBylaw.Unknown;
+
+    setState(() => _isBylawInEffect = bylaw);
+  }
 
   static const _bylawHelpTitle = 'Snow clearing bylaw';
   static const _bylawHelpText = '''
@@ -388,4 +401,41 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
   }
 
   void _submitReport() {}
+}
+
+SnowBylaw _computeBylaw(String responseBody) {
+  List<List<dynamic>> weatherData = const CsvToListConverter(eol: '\n').convert(responseBody);
+  weatherData.removeWhere((row) => row.length <= 2); // remove intro headers from the csv data.
+  int indexOfDateTime =      weatherData.first.indexOf("Date/Time");
+  int indexOfTotalSnow =     weatherData.first.indexOf("Total Snow (cm)");
+  int indexOfTotalSnowFlag = weatherData.first.indexOf("Total Snow Flag");
+  int indexOfTotalPrecip =   weatherData.first.indexOf("Total Precip (mm)");
+
+  if (indexOfDateTime != 0 || indexOfTotalSnow == -1 || indexOfTotalPrecip == -1 || indexOfTotalSnowFlag == -1)
+    return SnowBylaw.Unknown;
+
+  // Find the last weekday.
+  DateTime lastWeekday = DateTime.now().subtract(new Duration(days: 1));
+  if (lastWeekday.weekday == DateTime.sunday) lastWeekday = lastWeekday.subtract(new Duration(days: 1));
+  if (lastWeekday.weekday == DateTime.saturday) lastWeekday = lastWeekday.subtract(new Duration(days: 1));
+
+  for (List<dynamic> row in weatherData) {
+    DateTime rowDate = DateTime.tryParse(row.elementAt(indexOfDateTime).toString());
+    if (rowDate == null) continue;
+
+    if (lastWeekday.day == rowDate.day && lastWeekday.month == rowDate.month && lastWeekday.year == rowDate.year) {
+      double snow = 0.0;
+      if (row.elementAt(indexOfTotalSnowFlag).toString() != 'M' && row.elementAt(indexOfTotalSnow).toString().isNotEmpty) {
+        snow = double.tryParse(row.elementAt(indexOfTotalSnow).toString());
+      } else {
+        snow = double.tryParse(row.elementAt(indexOfTotalPrecip).toString());
+      }
+
+      if (snow == null) return SnowBylaw.Unknown;
+      if (snow <= 0) return SnowBylaw.InEffect;
+      else return SnowBylaw.NotInEffect;
+    }
+  }
+
+  return SnowBylaw.Unknown;
 }
