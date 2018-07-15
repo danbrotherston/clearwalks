@@ -172,7 +172,18 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
   Widget _helpIcon(String helpTitle, String helpText) {
     return new IconButton(
       icon: const Icon(Icons.help),
-      onPressed: () {},
+      onPressed: () {
+        showDialog<Null>(
+          context: context,
+          barrierDismissible: true,
+          builder: (BuildContext context) {
+            return new AlertDialog(
+              title: new Text(helpTitle),
+              content: new Text(helpText.replaceAll("\n", " "), softWrap: true)
+            );
+          }
+        );
+      },
     );
   }
 
@@ -274,11 +285,13 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
 
   static const _bylawHelpTitle = 'Snow clearing bylaw';
   static const _bylawHelpText = '''
-    The sidewalk clearing bylaw is only in effect when there has been no snowfall for
-    at least 24 hours.  This field indicates our best guess about whether the bylaw is
-    in effect, based on the day of the week, and the time of the last snowfall.  It is
-    still valuable to report uncleared sidewalks to bylaw when the bylaw is not in effect
-    as the bylaw officers will inspect the property when the bylaw does come into effect.
+The sidewalk clearing bylaw is only in effect when there has been no snowfall for
+at least 24 hours.  This field indicates our best guess about whether the bylaw is
+in effect, based on the day of the week, and the time of the last snowfall.  It is
+still valuable to report uncleared sidewalks to bylaw when the bylaw is not in effect
+as the bylaw officers will inspect the property when the bylaw does come into effect.
+Due to data limitations, this field only considers previous days, if it has snowed at
+all on this day, the bylaw has been reset.
   ''';
 
   Widget _bylawInEffect() {
@@ -321,12 +334,12 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
 
   static const _complaintTitle = 'Submitting complaints to bylaw';
   static const _complaintText = '''
-    We have attemped to enable the app to submit complaints to the city's bylaw
-    enforcement.  This means different things in each of the three cities, and
-    since this is not a city endorsed app, there is no guarantee that bylaw will
-    actually respond to these complaints.  This checkbox will be disabled if the
-    location selected is outside of one of the cities where bylaw enforcement
-    is supported.
+We have attemped to enable the app to submit complaints to the city's bylaw
+enforcement.  This means different things in each of the three cities, and
+since this is not a city endorsed app, there is no guarantee that bylaw will
+actually respond to these complaints.  This checkbox will be disabled if the
+location selected is outside of one of the cities where bylaw enforcement
+is supported.
   ''';
 
   Widget _bylawComplaint() {
@@ -347,13 +360,13 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
 
   static const _sidewalksTitle = '# of sidewalks affected';
   static const _sidewalksText = '''
-    This field allows you to indicate to us that there are several properties with
-    blocked sidewalks in the area.  We use this information to help understand how
-    many properties are affected without requiring you to submit multiple complaints.
-    You're welcome to submit multiple complaints if you like.  Sidewalks should be
-    adjacent, or nearly adjacent to the complaint address you submit, if they are
-    further you should submit another report for the other address.  Most bylaw
-    officers will also inspect adjacent sidewalks as well when inspecting addresses.
+This field allows you to indicate to us that there are several properties with
+blocked sidewalks in the area.  We use this information to help understand how
+many properties are affected without requiring you to submit multiple complaints.
+You're welcome to submit multiple complaints if you like.  Sidewalks should be
+adjacent, or nearly adjacent to the complaint address you submit, if they are
+further you should submit another report for the other address.  Most bylaw
+officers will also inspect adjacent sidewalks as well when inspecting addresses.
   ''';
 
   Widget _sidewalksAffected() {
