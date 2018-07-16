@@ -13,7 +13,6 @@ import 'package:firebase_database/firebase_database.dart';
 
 import 'package:location/location.dart';
 import 'package:vector_math/vector_math.dart' as VMath;
-import 'package:http/http.dart';
 
 class Home extends StatefulWidget {
   @override
