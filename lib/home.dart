@@ -10,9 +10,11 @@ import 'package:clearwalks/address_field.dart';
 import 'package:clearwalks/snow_bylaw.dart';
 
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:location/location.dart';
 import 'package:vector_math/vector_math.dart' as VMath;
+import 'package:uuid/uuid.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -354,5 +356,47 @@ officers will also inspect adjacent sidewalks as well when inspecting addresses.
     );
   }
 
-  void _submitReport() {}
+  void _submitReport() async {
+    showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return new Dialog(
+            child: new Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                new CircularProgressIndicator(),
+                new Text("Submitting report..."),
+              ],
+            ),
+          );
+        }
+      );
+
+    String key = DateTime.now().millisecondsSinceEpoch.toString() + Uuid().v4().toString();
+    DatabaseReference bylawDateRef = FirebaseDatabase.instance.reference().child('reports').child(key);
+
+    FirebaseUser user = await FirebaseAuth.instance.currentUser();
+    _lastGPSLocation = _lastGPSLocation ?? {};
+    _currentLocation = _currentLocation ?? {};
+
+    Map<String, dynamic> reportData = {
+      'date': DateTime.now().toIso8601String(),
+      'user_uid': user.uid,
+      'user_email': user.email,
+      'report_to_bylaw': _submitBylawComplaint,
+      'number_sidewalks_affected': _numberOfAffectedSidewalks,
+      'problem_location': _locationOfProblem.index,
+      'problem_type': _typeOfProblem.index,
+      'selected_location_lat': _currentLocation['latitude'] ?? "",
+      'selected_location_long': _currentLocation['longitude'] ?? "",
+      'last_gps_location_lat': _lastGPSLocation['latitude'] ?? "",
+      'last_gps_location_long': _lastGPSLocation['longitude'] ?? "",
+      'last_gps_accuracy': _lastGPSLocation['accuracy'] ?? "",
+      'manual_repositioning': _isManuallyRepositioningMap
+    };
+
+    await bylawDateRef.set(reportData);
+    Navigator.pop(context); //pop dialog
+  }
 }
