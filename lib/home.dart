@@ -33,6 +33,8 @@ enum Coverage {
 }
 
 class HomeState extends State<Home> with SingleTickerProviderStateMixin {
+  ScaffoldState _scaffold;
+
   // User parameters
   bool _submitBylawComplaint = true;
   double _numberOfAffectedSidewalks = 1.0;
@@ -115,49 +117,54 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
         child: new Icon(Icons.add),
         onPressed: _submitReport,
       ),*/
-      body: new Column(
-        children: <Widget>[
-          new SnowBylawWidget(helpIcon: _helpIcon(_bylawHelpTitle, _bylawHelpText)),
-          _bylawComplaint(),
-          new Divider(height: 2.0)
-        ]
-        ..addAll(_snowCoverage())
-        ..addAll(_snowLocation())
-        ..add(_sidewalksAffected())
-        ..add(
-          new Expanded(
-            child: new LocationMap(
-              currentLocation: _currentLocation,
-              onPanStart: () => _isManuallyRepositioningMap = true,
-              onPanEnd: (Offset newOffset) {
-                if (_currentLocation == null) return;
+      body: new Builder(
+        builder: (BuildContext context) {
+          _scaffold = Scaffold.of(context);
+          return new Column(
+            children: <Widget>[
+              new SnowBylawWidget(helpIcon: _helpIcon(_bylawHelpTitle, _bylawHelpText)),
+              _bylawComplaint(),
+              new Divider(height: 2.0)
+            ]
+            ..addAll(_snowCoverage())
+            ..addAll(_snowLocation())
+            ..add(_sidewalksAffected())
+            ..add(
+              new Expanded(
+                child: new LocationMap(
+                  currentLocation: _currentLocation,
+                  onPanStart: () => _isManuallyRepositioningMap = true,
+                  onPanEnd: (Offset newOffset) {
+                    if (_currentLocation == null) return;
 
-                int zoom = (1 << 17);
-                double size = 256.0 * zoom;
-                double resLat = cos(_currentLocation['latitude'] * pi / 180.0) * 360.0 / size;
-                double resLong = 360 / size;
+                    int zoom = (1 << 17);
+                    double size = 256.0 * zoom;
+                    double resLat = cos(_currentLocation['latitude'] * pi / 180.0) * 360.0 / size;
+                    double resLong = 360 / size;
 
-                double deltaLat = resLat * newOffset.dy;
-                double deltaLong = resLong * newOffset.dx * -1;
+                    double deltaLat = resLat * newOffset.dy;
+                    double deltaLong = resLong * newOffset.dx * -1;
 
-                var newLocation = {
-                  'latitude': _currentLocation['latitude'] + deltaLat,
-                  'longitude': _currentLocation['longitude'] + deltaLong
-                };
+                    var newLocation = {
+                      'latitude': _currentLocation['latitude'] + deltaLat,
+                      'longitude': _currentLocation['longitude'] + deltaLong
+                    };
 
-                setState(() => _currentLocation = newLocation);
-              },
-              onTapGPSMode: () => setState(() {
-                _isManuallyRepositioningMap = false;
-                _currentLocation = _lastGPSLocation;
-              }),
+                    setState(() => _currentLocation = newLocation);
+                  },
+                  onTapGPSMode: () => setState(() {
+                    _isManuallyRepositioningMap = false;
+                    _currentLocation = _lastGPSLocation;
+                  }),
+                )
+              )
             )
-          )
-        )
-        ..add(new Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: new AddressField(currentLocation: _currentLocation)
-        ))
+            ..add(new Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: new AddressField(currentLocation: _currentLocation)
+            ))
+          );
+        }
       )
     );
   }
@@ -361,11 +368,14 @@ officers will also inspect adjacent sidewalks as well when inspecting addresses.
         context: context,
         barrierDismissible: false,
         builder: (BuildContext context) {
-          return new Dialog(
-            child: new Row(
+          return new AlertDialog(
+            content: new Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                new CircularProgressIndicator(),
+                new Padding(
+                  padding: const EdgeInsets.only(right: 16.0),
+                  child: CircularProgressIndicator()
+                ),
                 new Text("Submitting report..."),
               ],
             ),
@@ -373,30 +383,47 @@ officers will also inspect adjacent sidewalks as well when inspecting addresses.
         }
       );
 
-    String key = DateTime.now().millisecondsSinceEpoch.toString() + Uuid().v4().toString();
-    DatabaseReference bylawDateRef = FirebaseDatabase.instance.reference().child('reports').child(key);
+    String toastMessage = 'Successfully logged the sidewalk report.';
 
-    FirebaseUser user = await FirebaseAuth.instance.currentUser();
-    _lastGPSLocation = _lastGPSLocation ?? {};
-    _currentLocation = _currentLocation ?? {};
+    try {
+      String key = DateTime.now().millisecondsSinceEpoch.toString() + Uuid().v4().toString();
+      DatabaseReference bylawDateRef = FirebaseDatabase.instance.reference().child('reports').child(key);
 
-    Map<String, dynamic> reportData = {
-      'date': DateTime.now().toIso8601String(),
-      'user_uid': user.uid,
-      'user_email': user.email,
-      'report_to_bylaw': _submitBylawComplaint,
-      'number_sidewalks_affected': _numberOfAffectedSidewalks,
-      'problem_location': _locationOfProblem.index,
-      'problem_type': _typeOfProblem.index,
-      'selected_location_lat': _currentLocation['latitude'] ?? "",
-      'selected_location_long': _currentLocation['longitude'] ?? "",
-      'last_gps_location_lat': _lastGPSLocation['latitude'] ?? "",
-      'last_gps_location_long': _lastGPSLocation['longitude'] ?? "",
-      'last_gps_accuracy': _lastGPSLocation['accuracy'] ?? "",
-      'manual_repositioning': _isManuallyRepositioningMap
-    };
+      FirebaseUser user = await FirebaseAuth.instance.currentUser();
+      _lastGPSLocation = _lastGPSLocation ?? {};
+      _currentLocation = _currentLocation ?? {};
 
-    await bylawDateRef.set(reportData);
-    Navigator.pop(context); //pop dialog
+      Map<String, dynamic> reportData = {
+        'date': DateTime.now().toIso8601String(),
+        'user_uid': user.uid,
+        'user_email': user.email,
+        'report_to_bylaw': _submitBylawComplaint,
+        'number_sidewalks_affected': _numberOfAffectedSidewalks,
+        'problem_location': _locationOfProblem.index,
+        'problem_type': _typeOfProblem.index,
+        'selected_location_lat': _currentLocation['latitude'] ?? "",
+        'selected_location_long': _currentLocation['longitude'] ?? "",
+        'last_gps_location_lat': _lastGPSLocation['latitude'] ?? "",
+        'last_gps_location_long': _lastGPSLocation['longitude'] ?? "",
+        'last_gps_accuracy': _lastGPSLocation['accuracy'] ?? "",
+        'manual_repositioning': _isManuallyRepositioningMap
+      };
+
+      await bylawDateRef.set(reportData);
+    } catch(error) {
+      toastMessage = 'Failed to send sidewalk report: ' + error.toString();
+    } finally {
+      Navigator.pop(context); //pop dialog
+      _scaffold.showSnackBar(
+        new SnackBar(
+          duration: new Duration(seconds: 8),
+          content: new Text(toastMessage),
+          action: new SnackBarAction(
+            label: 'View Reports',
+            onPressed: () => Navigator.of(context).pushNamed('/previous'),
+          )
+        )
+      );
+    }
   }
 }
