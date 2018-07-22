@@ -10,16 +10,20 @@ import 'package:clearwalks/consts.dart';
 
 class AddressField extends StatefulWidget {
   final Map<String, double> currentLocation;
+  final AddressFieldState state;
 
-  AddressField({this.currentLocation});
+  AddressField({@required this.currentLocation, @required this.state});
 
   @override
-  State<StatefulWidget> createState() => new _AddressFieldState();
+  State<StatefulWidget> createState() => state;
 }
 
-class _AddressFieldState extends State<AddressField> {
+class AddressFieldState extends State<AddressField> {
   String _hintText = '123 First St. Kitchener, ON';
   Client _http = new Client();
+
+  List<Address> addresses = [];
+  String get currentAddress => addresses.first?.printable;
 
   @override
   void initState() {
@@ -55,7 +59,7 @@ class _AddressFieldState extends State<AddressField> {
 
     if (currentWidget != widget || !mounted) return;
 
-    List<Address> addresses = await _fromReverseGeocodeResponse(result);
+    addresses = await _fromReverseGeocodeResponse(result);
 
     if (currentWidget != widget || !mounted) return;
 

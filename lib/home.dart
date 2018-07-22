@@ -34,6 +34,7 @@ enum Coverage {
 
 class HomeState extends State<Home> with SingleTickerProviderStateMixin {
   ScaffoldState _scaffold;
+  AddressFieldState _addressFieldState;
 
   // User parameters
   bool _submitBylawComplaint = true;
@@ -70,6 +71,7 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    _addressFieldState = new AddressFieldState();
     _locationSubscription =
       _locationService.onLocationChanged.listen((Map<String,double> result) {
         _lastGPSLocation = result;
@@ -161,7 +163,7 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
             )
             ..add(new Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: new AddressField(currentLocation: _currentLocation)
+              child:  AddressField(currentLocation: _currentLocation, state: _addressFieldState)
             ))
           );
         }
@@ -406,6 +408,7 @@ officers will also inspect adjacent sidewalks as well when inspecting addresses.
         'last_gps_location_lat': _lastGPSLocation['latitude'] ?? "",
         'last_gps_location_long': _lastGPSLocation['longitude'] ?? "",
         'last_gps_accuracy': _lastGPSLocation['accuracy'] ?? "",
+        'address': _addressFieldState.currentAddress ?? "",
         'manual_repositioning': _isManuallyRepositioningMap
       };
 
