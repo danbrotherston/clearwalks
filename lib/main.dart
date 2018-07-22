@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:clearwalks/initial_screen.dart';
 import 'package:clearwalks/home.dart';
 import 'package:clearwalks/previous_reports.dart';
+import 'package:clearwalks/consts.dart';
 
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -47,9 +48,9 @@ void main() async {
     title: 'ClearWalks',
     theme: new ThemeData(primarySwatch: Colors.green),
     routes: <String, WidgetBuilder>{
-      '/': (BuildContext context) => new InitialScreen(),
-      '/home': (BuildContext context) => new Home(),
-      '/previous': (BuildContext context) => new PreviousReports()
+      NAV_ROOT_PATH: (BuildContext context) => new InitialScreen(),
+      NAV_HOME_PATH: (BuildContext context) => new Home(),
+      NAV_PREV_PATH: (BuildContext context) => new PreviousReports()
     },
     initialRoute: initialRoute,
   ));

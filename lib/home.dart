@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:clearwalks/location_map.dart';
 import 'package:clearwalks/address_field.dart';
 import 'package:clearwalks/snow_bylaw.dart';
+import 'package:clearwalks/consts.dart';
 
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -105,7 +106,7 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
         title: new Text('Clear Walks'),
         leading: new IconButton(
           icon: new Icon(Icons.list),
-          onPressed: () => Navigator.of(context).pushNamed('/previous')
+          onPressed: () => Navigator.of(context).pushNamed(NAV_PREV_PATH)
         ),
         actions: <Widget>[
           new IconButton(
@@ -389,27 +390,27 @@ officers will also inspect adjacent sidewalks as well when inspecting addresses.
 
     try {
       String key = DateTime.now().millisecondsSinceEpoch.toString() + Uuid().v4().toString();
-      DatabaseReference bylawDateRef = FirebaseDatabase.instance.reference().child('reports').child(key);
+      DatabaseReference bylawDateRef = FirebaseDatabase.instance.reference().child(FB_REPORTS_PATH).child(key);
 
       FirebaseUser user = await FirebaseAuth.instance.currentUser();
       _lastGPSLocation = _lastGPSLocation ?? {};
       _currentLocation = _currentLocation ?? {};
 
       Map<String, dynamic> reportData = {
-        'date': DateTime.now().toIso8601String(),
-        'user_uid': user.uid,
-        'user_email': user.email,
-        'report_to_bylaw': _submitBylawComplaint,
-        'number_sidewalks_affected': _numberOfAffectedSidewalks,
-        'problem_location': _locationOfProblem.index,
-        'problem_type': _typeOfProblem.index,
-        'selected_location_lat': _currentLocation['latitude'] ?? "",
-        'selected_location_long': _currentLocation['longitude'] ?? "",
-        'last_gps_location_lat': _lastGPSLocation['latitude'] ?? "",
-        'last_gps_location_long': _lastGPSLocation['longitude'] ?? "",
-        'last_gps_accuracy': _lastGPSLocation['accuracy'] ?? "",
-        'address': _addressFieldState.currentAddress ?? "",
-        'manual_repositioning': _isManuallyRepositioningMap
+        FB_REPORT_DATE_PATH: DateTime.now().toIso8601String(),
+        FB_REPORT_USER_PATH: user.uid,
+        FB_REPORT_EMAIL_PATH: user.email,
+        FB_REPORT_BYLAW_REPORTED_PATH: _submitBylawComplaint,
+        FB_REPORT_NUM_WALKS_PATH: _numberOfAffectedSidewalks,
+        FB_REPORT_PROBLEM_LOC_PATH: _locationOfProblem.index,
+        FB_REPORT_PROBLEM_TYPE_PATH: _typeOfProblem.index,
+        FB_REPORT_SELECTED_LAT_PATH: _currentLocation['latitude'] ?? "",
+        FB_REPORT_SELECTED_LONG_PATH: _currentLocation['longitude'] ?? "",
+        FB_REPORT_GPS_LAT_PATH: _lastGPSLocation['latitude'] ?? "",
+        FB_REPORT_GPS_LONG_PATH: _lastGPSLocation['longitude'] ?? "",
+        FB_REPORT_GPS_ACCURACY_PATH: _lastGPSLocation['accuracy'] ?? "",
+        FB_REPORT_ADDRESS_PATH: _addressFieldState.currentAddress ?? "",
+        FB_REPORT_REPOSITIONED_PATH: _isManuallyRepositioningMap
       };
 
       await bylawDateRef.set(reportData);
@@ -423,7 +424,7 @@ officers will also inspect adjacent sidewalks as well when inspecting addresses.
           content: new Text(toastMessage),
           action: new SnackBarAction(
             label: 'View Reports',
-            onPressed: () => Navigator.of(context).pushNamed('/previous'),
+            onPressed: () => Navigator.of(context).pushNamed(NAV_PREV_PATH),
           )
         )
       );
