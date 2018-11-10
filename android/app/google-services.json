@@ -15,6 +15,30 @@
       },
       "oauth_client": [
         {
+          "client_id": "486125140641-up0mndndpcumls3j5ugpop3bl5hps8rk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.danbrotherston.clearwalks",
+            "certificate_hash": "ec8ee6e3859e8cc1127b768b506043f15929b734"
+          }
+        },
+        {
+          "client_id": "486125140641-o41ohn2n5ge71k7stvcasklstvag9kf7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.danbrotherston.clearwalks",
+            "certificate_hash": "8da936f1493cb1f11e2219a5845817519c4ef7df"
+          }
+        },
+        {
+          "client_id": "486125140641-l21ftrhhg843uksso34onda6v1739ecm.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.danbrotherston.clearwalks",
+            "certificate_hash": "7a0c99850d3ac17ce74ffa8d8f76e556f05d47c7"
+          }
+        },
+        {
           "client_id": "486125140641-ucd0jm5vt1e9v2j0tnmj2bie8eadg1r6.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -29,8 +53,20 @@
           "status": 1
         },
         "appinvite_service": {
-          "status": 1,
-          "other_platform_oauth_client": []
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "486125140641-ucd0jm5vt1e9v2j0tnmj2bie8eadg1r6.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "486125140641-gljj5s7t4cs7jhvj3fadlraiijpntcjg.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.danbrotherston.clearwalks"
+              }
+            }
+          ]
         },
         "ads_service": {
           "status": 2

@@ -74,7 +74,7 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
     super.initState();
     _addressFieldState = new AddressFieldState();
     _locationSubscription =
-      _locationService.onLocationChanged.listen((Map<String,double> result) {
+      _locationService.onLocationChanged().listen((Map<String,double> result) {
         _lastGPSLocation = result;
         double minDistanceForMapUpdate = 20.0;
         double distance = _currentLocation == null
@@ -102,6 +102,11 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
+      floatingActionButton: new FloatingActionButton(
+        onPressed: _submitReport,
+        child: new Icon(Icons.add),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
       appBar: new AppBar(
         title: new Text('Clear Walks'),
         leading: new IconButton(

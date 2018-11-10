@@ -14,7 +14,7 @@ class InitialScreen extends StatelessWidget {
 
   static const String _byline = 'Help us gather data about\nwhen and where sidewalks\nare blocked.';
   static const String _title = 'Clear Walks';
-  static const String _followLine = 'Not affiliated or mobilized by TriTAG';
+  static const String _followLine = 'Author not affiliated or mobilized by TriTAG';
 
   @override
   Widget build(BuildContext context) {
