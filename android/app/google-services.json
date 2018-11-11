@@ -39,6 +39,14 @@
           }
         },
         {
+          "client_id": "486125140641-decqtbgsc83kvdj4brdl3ou0a5aiuo7v.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.danbrotherston.clearwalks",
+            "certificate_hash": "b684bbc4fea6c3cd23fe3c62cc231abc26db952e"
+          }
+        },
+        {
           "client_id": "486125140641-ucd0jm5vt1e9v2j0tnmj2bie8eadg1r6.apps.googleusercontent.com",
           "client_type": 3
         }
