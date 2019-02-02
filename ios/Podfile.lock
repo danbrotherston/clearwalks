@@ -74,7 +74,7 @@ DEPENDENCIES:
   - firebase_auth (from `.symlinks/plugins/firebase_auth/ios`)
   - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
   - firebase_database (from `.symlinks/plugins/firebase_database/ios`)
-  - Flutter (from `.symlinks/flutter/ios`)
+  - Flutter (from `.symlinks/flutter/ios-release`)
   - google_sign_in (from `.symlinks/plugins/google_sign_in/ios`)
   - location (from `.symlinks/plugins/location/ios`)
 
@@ -101,7 +101,7 @@ EXTERNAL SOURCES:
   firebase_database:
     :path: ".symlinks/plugins/firebase_database/ios"
   Flutter:
-    :path: ".symlinks/flutter/ios"
+    :path: ".symlinks/flutter/ios-release"
   google_sign_in:
     :path: ".symlinks/plugins/google_sign_in/ios"
   location:
@@ -111,7 +111,7 @@ SPEC CHECKSUMS:
   Firebase: d6861c2059d8c32d1e6dd8932e22ada346d90a3a
   firebase_auth: 27a5a77a032d557c18f8e223aaf8ec1368f6cdbc
   firebase_core: c96aa8b2fcf7f5167d32f22034f502f9304952b8
-  firebase_database: dd62ab9f71967c9011ce2fd03a89e762dcc364df
+  firebase_database: 431f77dc97eaba31168762025bc31c8a9a68e68b
   FirebaseAnalytics: 19812b49fa5f283dd6b23edf8a14b5d477029ab8
   FirebaseAuth: acbeef02fe7c3a26624e309849f3fe30c84115af
   FirebaseCore: cafc814b2d84fc8733f09e653041cc2165332ad7

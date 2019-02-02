@@ -106,7 +106,6 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
         onPressed: _submitReport,
         child: new Icon(Icons.add),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
       appBar: new AppBar(
         title: new Text('Clear Walks'),
         leading: new IconButton(
