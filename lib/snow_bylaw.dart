@@ -41,11 +41,11 @@ class SnowBylawWidgetState extends State<SnowBylawWidget> {
     DateTime currentDate = DateTime.now();
 
     // Bylaw doesn't operate on weekends.
-    List<int> weekendDays = [DateTime.saturday, DateTime.sunday];
+    /*List<int> weekendDays = [DateTime.saturday, DateTime.sunday];
     if (weekendDays.contains(currentDate.weekday)) {
       setState(() => _isBylawInEffect = SnowBylaw.NotInEffect);
       return;
-    }
+    }*/
 
     DatabaseReference bylawDateRef = FirebaseDatabase.instance.reference().child('bylaw/date_checked');
     DatabaseReference bylawInForceRef = FirebaseDatabase.instance.reference().child('bylaw/in_force');
