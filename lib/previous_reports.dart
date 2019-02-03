@@ -14,7 +14,7 @@ class PreviousReports extends StatefulWidget {
 }
 
 class _PreviousReportsState extends State<PreviousReports> {
-  final DateFormat _format = new DateFormat('EEEE LLLL d j:m ');
+  final DateFormat _format = new DateFormat('EEEE LLLL d h:m ');
 
   FirebaseUser _user;
   int _openIndex = -1;
