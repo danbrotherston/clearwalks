@@ -32,23 +32,34 @@ class LocationMap extends StatefulWidget {
 
 class LocationMapState extends State<LocationMap> {
   ui.Image _mapImage;
+
+  // The offset of the map from its centre location, accumulates after repeated
+  // pans before image reloads.
+  Offset _imageOffset = Offset.zero;
+
+  // The distance the map has been panned by the user.
   Offset _panOffset = Offset.zero;
 
   @override
   void initState() {
     super.initState();
-    _readImage();
+    _panOffset = Offset.zero;
+    _imageOffset = Offset.zero;
+    _readImage(_imageOffset);
   }
 
-  void _readImage() async {
+  void _readImage(Offset offset) async {
     String imageUrl = "https://maps.googleapis.com/maps/api/staticmap?scale=2&center=${widget._currentLocation["latitude"]},${widget._currentLocation["longitude"]}&zoom=17&size=640x640&key=$API_KEY";
     Uint8List bytes = await http.readBytes(imageUrl);
     ui.Codec codec = await ui.instantiateImageCodec(bytes);
     ui.FrameInfo frame = await codec.getNextFrame();
-    setState(() {
-      _mapImage = frame.image;
-      _panOffset = Offset.zero;
-    });
+    if (offset == _imageOffset) {
+      // If this isn't for the current image offset, don't display it, a new image will be coming.
+      setState(() {
+        _mapImage = frame.image;
+        _imageOffset = Offset.zero;
+      });
+    }
   }
 
   @override
@@ -56,7 +67,7 @@ class LocationMapState extends State<LocationMap> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget._currentLocation['longitude'] != widget._currentLocation['longitude'] ||
         oldWidget._currentLocation['latitude'] != widget._currentLocation['latitude']) {
-      _readImage();
+      _readImage(_imageOffset);
     }
   }
 
@@ -68,10 +79,13 @@ class LocationMapState extends State<LocationMap> {
       ? new Container()
       : new GestureDetector(
         onPanStart: (DragStartDetails details) => this.widget.onPanStart(),
-        onPanEnd: (DragEndDetails details) => this.widget.onPanEnd(_panOffset),
-        onPanUpdate: (DragUpdateDetails details) {
-          this.setState(() => _panOffset = _panOffset.translate(details.delta.dx, details.delta.dy));
+        onPanEnd: (DragEndDetails details) {
+          this.widget.onPanEnd(_panOffset);
+          _imageOffset += _panOffset;
+          _panOffset = Offset.zero;
         },
+        onPanUpdate: (DragUpdateDetails details) =>
+          this.setState(() => _panOffset = _panOffset.translate(details.delta.dx, details.delta.dy)),
         behavior: HitTestBehavior.opaque,
         child: new Stack(
           children: <Widget>[
@@ -80,7 +94,7 @@ class LocationMapState extends State<LocationMap> {
                 size: Size.infinite,
                 painter: new _OffsetCenterImagePainter(
                   image: _mapImage,
-                  offset: _panOffset,
+                  offset: _panOffset + _imageOffset,
                   scale: 0.5
                 )
               )
