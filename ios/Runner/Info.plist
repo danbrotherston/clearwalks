@@ -41,6 +41,12 @@
 	<string>Location is used to automatically detect the address of a sidewalk clearing report you submit.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>You can upload a photo of a particularly bad sidewalk.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>You can take a photo of a particularly bad sidewalk.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This just comes along with the photo permissions, we don't actually record anything.</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
 	<key>UISupportedInterfaceOrientations</key>

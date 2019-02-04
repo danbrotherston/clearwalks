@@ -28,8 +28,14 @@ photo at City council.
   ''';
   
   void _submitPhoto() {}
-  void _takePhoto() {}
-  void _selectPhoto() {}
+
+  void _selectPhoto(ImageSource source) async {
+    var image = await ImagePicker.pickImage(source: source);
+
+    setState(() {
+      _image = image;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,6 +56,12 @@ photo at City council.
                 child: new Container(
                   decoration: new BoxDecoration(
                     color: Colors.grey,
+                    image: _image == null
+                      ? null
+                      : new DecorationImage(
+                        image: new FileImage(_image),
+                        fit: BoxFit.cover
+                      ),
                     borderRadius: new BorderRadius.circular(32)
                   ),
                   child: new Center(
@@ -58,8 +70,19 @@ photo at City council.
                         new Expanded(
                           child: new FlatButton.icon(
                             icon: new Icon(Icons.camera),
-                            label: new Text("Take a Photo"),
-                            onPressed: _takePhoto,
+                            label: new Text(
+                              "Take a Photo",
+                              style: new TextStyle(
+                                shadows: <Shadow>[
+                                  new Shadow(
+                                    color: Colors.white,
+                                    offset: new Offset(0.0, 0.0),
+                                    blurRadius: 4.0
+                                  )
+                                ]
+                              )
+                            ),
+                            onPressed: () => _selectPhoto(ImageSource.camera),
                           )
                         ),
                         new Container(
@@ -69,8 +92,19 @@ photo at City council.
                         new Expanded(
                           child: new FlatButton.icon(
                             icon: new Icon(Icons.image),
-                            label: new Text("Select a Photo"),
-                            onPressed: _selectPhoto,
+                            label: new Text(
+                              "Select a Photo",
+                              style: new TextStyle(
+                                shadows: <Shadow>[
+                                  new Shadow(
+                                    color: Colors.white,
+                                    offset: new Offset(0.0, 0.0),
+                                    blurRadius: 4.0
+                                  )
+                                ]
+                              )
+                            ),
+                            onPressed: () => _selectPhoto(ImageSource.gallery),
                           )
                         )
                       ]
