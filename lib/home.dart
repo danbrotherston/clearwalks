@@ -9,6 +9,7 @@ import 'package:clearwalks/location_map.dart';
 import 'package:clearwalks/address_field.dart';
 import 'package:clearwalks/snow_bylaw.dart';
 import 'package:clearwalks/consts.dart';
+import 'package:clearwalks/upload_image.dart';
 
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -102,10 +103,6 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-      floatingActionButton: new FloatingActionButton(
-        onPressed: _submitReport,
-        child: new Icon(Icons.add),
-      ),
       appBar: new AppBar(
         title: new Text('Clear Walks'),
         leading: new IconButton(
@@ -114,16 +111,22 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
         ),
         actions: <Widget>[
           new IconButton(
+            icon: new Icon(Icons.image),
+            onPressed: () => Navigator.of(context).push(new MaterialPageRoute<void>(
+              builder: (BuildContext context) => new UploadImage(_currentLocation),
+            ))
+          ),
+          new IconButton(
             icon: new Icon(Icons.add),
             onPressed: _submitReport,
-          )
+          ),
         ],
       ),
-      /*floatingActionButton: new FloatingActionButton(
+      floatingActionButton: new FloatingActionButton(
         tooltip: 'Submit this sidewalk report.',
         child: new Icon(Icons.add),
         onPressed: _submitReport,
-      ),*/
+      ),
       body: new Builder(
         builder: (BuildContext context) {
           _scaffold = Scaffold.of(context);
