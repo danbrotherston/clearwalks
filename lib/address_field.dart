@@ -23,7 +23,7 @@ class AddressFieldState extends State<AddressField> {
   Client _http = new Client();
 
   List<Address> addresses = [];
-  String get currentAddress => addresses.first?.printable;
+  String get currentAddress => addresses.length > 0 ? addresses.first.printable : "";
 
   @override
   void initState() {
