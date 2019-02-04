@@ -112,9 +112,18 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
         actions: <Widget>[
           new IconButton(
             icon: new Icon(Icons.image),
-            onPressed: () => Navigator.of(context).push(new MaterialPageRoute<void>(
-              builder: (BuildContext context) => new UploadImage(_currentLocation),
-            ))
+            onPressed: () async {
+              bool result = await Navigator.of(context).push(new MaterialPageRoute<bool>(
+                builder: (BuildContext context) => new UploadImage(_currentLocation),
+              ));
+
+              if (result == true) {
+                _scaffold.showSnackBar(new SnackBar(
+                  duration: new Duration(seconds: 8),
+                  content: new Text("Image successfully uploaded and added to the map.")
+                ));
+              }
+            }
           ),
           new IconButton(
             icon: new Icon(Icons.add),

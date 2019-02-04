@@ -17,6 +17,15 @@ const FB_REPORT_GPS_ACCURACY_PATH = 'last_gps_accuracy';
 const FB_REPORT_ADDRESS_PATH = 'address';
 const FB_REPORT_REPOSITIONED_PATH = 'manual_repositioning';
 
+const FB_IMAGES_PATH = 'images';
+const FB_IMAGE_URL_PATH = 'url';
+const FB_IMAGE_DATE_PATH = FB_REPORT_DATE_PATH;
+const FB_IMAGE_USER_PATH = FB_REPORT_USER_PATH;
+const FB_IMAGE_EMAIL_PATH = FB_REPORT_EMAIL_PATH;
+const FB_IMAGE_LAT_PATH = FB_REPORT_SELECTED_LAT_PATH;
+const FB_IMAGE_LONG_PATH = FB_REPORT_SELECTED_LONG_PATH;
+const FB_IMAGE_DESCRIPTION_PATH = 'description';
+
 // Navigator paths
 const NAV_PREV_PATH = '/previous';
 const NAV_HOME_PATH = '/home';

@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+import 'package:uuid/uuid.dart';
 import 'package:image_picker/image_picker.dart';
+
+import 'package:clearwalks/consts.dart';
 
 import 'dart:io';
 
@@ -27,7 +34,136 @@ photo at City council.
 ~~(All photos will be public after uploading, only upload photos you're permitted too).
   ''';
   
-  void _submitPhoto() {}
+  void _submitPhoto() {
+    final String fileName = DateTime.now().millisecondsSinceEpoch.toString() + Uuid().v4().toString();
+    final StorageReference reference = FirebaseStorage.instance.ref().child(fileName);
+    final StorageUploadTask uploadTask = reference.putFile(_image);
+
+    uploadTask.onComplete.then((StorageTaskSnapshot snapshot) async {
+      if (snapshot.error == null) {
+        try {
+          FirebaseUser user = await FirebaseAuth.instance.currentUser();
+          String downloadUrl = await snapshot.ref.getDownloadURL();
+
+          Map<String, dynamic> reportData = {
+            FB_IMAGE_DATE_PATH: DateTime.now().toIso8601String(),
+            FB_IMAGE_USER_PATH: user.uid,
+            FB_IMAGE_EMAIL_PATH: user.email,
+            FB_IMAGE_LAT_PATH: this.widget.location['latitude'] ?? "",
+            FB_IMAGE_LONG_PATH: this.widget.location['longitude'] ?? "",
+            FB_IMAGE_URL_PATH: downloadUrl,
+            FB_IMAGE_DESCRIPTION_PATH: _commentTextController.text
+          };
+
+          String key = DateTime.now().millisecondsSinceEpoch.toString() + Uuid().v4().toString();
+          DatabaseReference imageRef = FirebaseDatabase.instance.reference().child(FB_IMAGES_PATH).child(key);
+
+          await imageRef.set(reportData);
+          Navigator.of(context).pop(true);
+        } catch(error) {
+          Scaffold.of(context).showSnackBar(new SnackBar(
+            duration: new Duration(seconds: 8),
+            content: new Text("Error while adding your image to the map.  Please try again.")
+          ));
+        } finally {
+          Navigator.of(context).pop(true);
+        }
+      }
+    });
+
+    showDialog(
+      context: this.context,
+      barrierDismissible: false,
+      builder: (BuildContext context) => new StreamBuilder<StorageTaskEvent>(
+        stream: uploadTask.events,
+        initialData: null,
+        builder: (BuildContext context, AsyncSnapshot<StorageTaskEvent> eventSnapshot) {
+          String title = "Image Upload";
+          String description = "";
+          double progress;
+          
+          Map<StorageTaskEventType, String> titles = {
+            null: "Preparing to Upload",
+            StorageTaskEventType.failure: "Upload Failed!",
+            StorageTaskEventType.pause: "Upload Paused",
+            StorageTaskEventType.resume: "Upload Resumed",
+            StorageTaskEventType.progress: "Upload In Progress...",
+            StorageTaskEventType.success: "Upload Completed!",
+          };
+
+          FlatButton cancelButton = FlatButton(
+            child: new Text("CANCEL"),
+            onPressed: uploadTask.cancel,
+          );
+
+          FlatButton okButton = FlatButton(
+            child: new Text("OKAY"),
+            onPressed: Navigator.of(context).pop,
+          );
+
+          FlatButton actionButton = cancelButton;
+
+          if (eventSnapshot.hasError || eventSnapshot.data?.type == StorageTaskEventType.failure) {
+            title = "Upload failed";
+            description = "There was an error while uploading your image.  Check the network and try again.";
+            progress = 0.0;
+            actionButton = okButton;
+          } else {
+            title = titles[eventSnapshot.data?.type];
+            if (eventSnapshot.data?.type == StorageTaskEventType.progress) {
+              progress = eventSnapshot.data.snapshot.bytesTransferred / eventSnapshot.data.snapshot.totalByteCount;
+            } else if (eventSnapshot.data?.type == StorageTaskEventType.success) {
+              progress = null;
+              description = "Placing image on the map.";
+              actionButton = null;
+            }
+          }
+
+          if (uploadTask.isCanceled) {
+            title = "Upload Cancelled";
+            description = "The upload was cancelled. You can go correct your entry or use the back button to return to reporting sidewalks.";
+          }
+
+          return new Dialog(
+            child: new Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                new LinearProgressIndicator(value: progress ?? 1.0),
+                new Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: new Text(
+                    title,
+                    textAlign: TextAlign.left,
+                    style: Theme.of(context).textTheme.title
+                  )
+                ),
+
+                description == ""
+                  ? new Container()
+                  : new Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: new Text(description, textAlign: TextAlign.left)
+                  ),
+
+                new Center(
+                  child: new CircularProgressIndicator(value: progress)
+                ),
+
+                new Align(
+                  alignment: Alignment.centerRight,
+                  child: new Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: actionButton
+                  )
+                )
+              ],
+            )
+          );
+        }
+      )
+    );
+  }
 
   void _selectPhoto(ImageSource source) async {
     var image = await ImagePicker.pickImage(source: source);
@@ -117,6 +253,7 @@ photo at City council.
           new Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
             child: new TextField(
+              textCapitalization: TextCapitalization.sentences,
               decoration: new InputDecoration(hintText: "Leave a comment about your picture, or your experience."),
               controller: _commentTextController,
               maxLines: 5,
