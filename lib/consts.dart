@@ -26,6 +26,9 @@ const FB_IMAGE_LAT_PATH = FB_REPORT_SELECTED_LAT_PATH;
 const FB_IMAGE_LONG_PATH = FB_REPORT_SELECTED_LONG_PATH;
 const FB_IMAGE_DESCRIPTION_PATH = 'description';
 
+const FB_USERS_PATH = 'users';
+const FB_USERS_FCM_TOKEN_PATH = 'fcm_token';
+
 // Navigator paths
 const NAV_PREV_PATH = '/previous';
 const NAV_HOME_PATH = '/home';

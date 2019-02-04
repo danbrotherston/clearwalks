@@ -12,6 +12,8 @@ dependencies:
   firebase_auth: 0.6.6
   firebase_database: 
   firebase_storage:
+  firebase_messaging: 2.1.0
+  shared_preferences:
   location: 
   http: ^0.12.0
   csv: ^4.0.0
