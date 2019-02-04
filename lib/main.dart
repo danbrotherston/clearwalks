@@ -20,7 +20,7 @@ final Location _location = new Location();
 
 initPlatformState() async {
   try {
-    await _location.getLocation;
+    await _location.getLocation();
   } on PlatformException catch (e) {
     if (e.code == 'PERMISSION_DENIED') {
       debugPrint('Permission denied');
